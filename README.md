@@ -7,19 +7,27 @@ Ha-ha, you should decide this after you read this guide.
 ## [Recommended books (not written by me)](recommended.md)
 ## [Similar Github Guides](notables.md)
 ## [Prerequisites](prerequisites.md)
+<br>
 
 # [Introduction](intro.md)
 
 ### Note about lines/records fields/words
+
 * Usually you'll want to keep working with records which are "lines". That is - strings delimited by newlines. I'll also be referring to records as lines to make things simpler. 
+
 * You can change how awk interprets records. Then records will be other things which are not "lines" (like strings separated by commas for example).  
+
 * The same goes for fields. Fields are strings separated by space by default. You can change this of course to have the separator be a comma or something else.
+
 * Because I just told you you'll know that a record is a line by default. But you could change it to something else (by changing the RS - the Record Separator). You also know that a field is a word (separated by space) by default - but you could change it by changing the FS - Field Separator. 
 
 
 ### How to call awk
+
 * You call it like `awk '{print $0}' file1 file2`
+
 * In the examples below I sometimes show the text inside '', not the full blown bash command.
+
 * If there are multiple files you have to use an awk script. Make a new file and put inside it:
 ```
 #!/usr/bin/awk -f
@@ -36,32 +44,18 @@ BEGIN {print "BEGINNING"}
 >> for each record (line) in all the files passed to awk
 >>> if record (line) matches `/bilbo/` pattern
 >>>> print the whole record (line)
+* If we wanted to only print the first field of that line, we would've used $1 instead of $0 (which means print the whole line).
 
-### Field
-* How about `/bilbo/ {print $1}`? `$1` represents the first field (word) from the current record (line). `$2` is second field (word) and so on. 
-* You can read `/bilbo/ {print $1}` as:
->> for each record (line) in all the files passed to awk
->>> if record (line) matches `/bilbo/` pattern
->>>> print the first field (word) from the record (line)
-
-
-### Pattern AND Pattern
-* Patterns can be more complex. Check this out `/bilbo/&&/frodo/{print "my precious"}`
-* You can read this as:
+### Pattern AND and OR Pattern
+* For patterns, the following awk program `/bilbo/&&/frodo/{print "my precious"}` can be read as:
 >> On each record (line) that matches `/bilbo/` AND `/frodo/`
 >>> print the string "my precious"
-
-### Pattern OR Pattern
-* Check this other pattern out `/bilbo/||/frodo/{print "Is it you mister Frodo?"}`
-* You can read this as:
->> On each record (line) that matches `/bilbo/` OR `/frodo/`
->>> print the string "Is it you mister Frodo?"
-
+* Similarly && can be replaced with || with an OR statement
 
 
 ### NOT Pattern
-* What about `! /frodo/ { print "Pohtatoes" }`? (note the extra spaces put there for clarity. You could also eliminate them to save typing)
-* Read it as: 
+* For a NOT statement, simply add an exclamation mark in front of the pattern `!/frodo/ { print "Pohtatoes" }`
+* This is read as:
 >> On each record (line) that DOESN'T match `/frodo/`
 >>> Print "Pohtatoes"
 
@@ -78,7 +72,7 @@ BEGIN {print "BEGINNING"}
 
 
 ### Pattern Range
-* How about this one? `/Shire/ , /Osgiliath/ { print $0 }`?
+* `/Shire/ , /Osgiliath/ { print $0 }`
 * The comma separated regex expressions are a "pattern range". 
 * Read this as:
 >> Execute command for each record (line) 
@@ -107,6 +101,7 @@ This Osgiliath is to drab for me.
 * It reads:
 >> Before any input is read
 >>> Print "And so it beggins"
+* If you want to use this command with multiple files, use BEGINFILE instead
 
 ### END Pattern
 * If something begins, it has to end, right? `END {print "There and back, by Bilbo Baggins"}`
@@ -114,25 +109,12 @@ This Osgiliath is to drab for me.
 * It reads:
 >> After all input was read
 >>> Print "There and back, by Bilbo Baggins"
+* If you want to use this command with multiple files, use ENDFILE instead
 
-
-### BEGINFILE, ENDFILE Patterns
-* If you pass multiple files to awk - it will treat them as being one contiguous file. But what if you want to call some commands when beginning to read input from a file? You use BEGINFILE and ENDFILE respectively.
-* `BEGINFILE {print "A new chapter is beginning mister Frodo"}`
-* It reads:
->> Before input is read from a file
->>> print "A new chapter is beginning mister Frodo"
-
-### NO Pattern
-* This a simple one. `{print $1}`. 
-* When no pattern is provided, just the command in curly braces, it is executed for all records (lines).
-* This reads
->> For all records (lines):
->>> print the first word
 
 ### Conditional Pattern
 * `NF>4{print}`
-* The pattern is `NF>4`. If true then exec commands inside curly braces.
+* The pattern is `NF>4`. If true then exec commands inside curly braces. A simple `{print}` command will print the whole record (line), just like `{print $0}`.
 * NF is the Number of Fields(words). If the current record (line) has more than 4 fields (words), print the record (line)
 
 
@@ -143,127 +125,54 @@ This Osgiliath is to drab for me.
 
 ### Variables
 * Awk has some built in variables. They are written in uppercase. 
+
 * They can be useful in a variety of cases. 
+
 * `FILENAME` is the name of the current file being processed. 
+
 * `BEGINFILE {print "we are beginning to process " FILENAME}` will print the string followed by the name of the file when awk begin processing file. 
-* `NR` is the Record Number (or Number Record if you'd like). In simple terms it's the record (line) count. If awk is processing line number 5 then NR is 5. 
+
+* `NR` is the Number Record. In simple terms it's the record (line) count. If awk is processing line number 5 then NR is 5. 
+
 * Let's say you have a 10 line file and a 5 line file. You pass both files to awk. Awk finishes the first 10 lines and is now at line 3 from the second file. How much will the NR be? 
+
 * You might be tempted to say 3 - but it's 13. NR stands for ALL the records (lines) that awk processes, not records (lines) belonging to file.
-* If you want to refer to record (line) count for file you would use FNR. F - from File. File Number Record. 
+
+* If you want to refer to record (line) count for file you would use FNR. F - for File. File Number Record. 
+
 * In the case above NR would be 13 but FNR would be 3. 
 
 ### More Variables
+
 * Here's a list of the most important variables with a short description
-* `FILENAME` - name of file
+
+* `FILENAME` - self explanatory
+
 * `FNR` - File Number Record (input record number for current file -  according to official docs). File record (line) count.
+
 * `FS` - Field separator (word separator if you'd like). Space by default. 
+
 * `IGNORECASE` - if set to 1 case is ignored. Very important. `/frodo/` would match `Have you seen my old ring Frodo?` if IGNORECASE is 1. If set to 0 it would not. Use it like this:
+
 ```
 BEGIN {IGNORECASE=1}
 /frodo/ {print "do you remember the taste of strawberries Frodo?"}
 ```
+
 * `NF` - number of fields (words) in the current record (line). You could use this to count words for example. 
+
+```
+/frodo/ {print NF}
+```
+
 * `NR` - Number Record. Global record (line) count if you will.
+
 * `RS` - Record Separator. A newline by default.
 
-
-### Programming intro
-* Awk is a full blown programming language. It has all the operators & syntax you would expect from a "regular" programming language such as C or python. 
-* This is taken directly from the manual
-```
- Operators
-       The operators in AWK, in order of decreasing precedence, are:
-
-       (...)       Grouping
-
-       $           Field reference.
-
-       ++ --       Increment and decrement, both prefix and postfix.
-
-       ^           Exponentiation (** may also be used, and **= for the assignment operator).
-
-       + - !       Unary plus, unary minus, and logical negation.
-
-       * / %       Multiplication, division, and modulus.
-
-       + -         Addition and subtraction.
-
-       space       String concatenation.
-
-       |   |&      Piped I/O for getline, print, and printf.
-
-       < > <= >= == !=
-                   The regular relational operators.
-
-       ~ !~        Regular expression match, negated match.  NOTE: Do not use a constant regular expression (/foo/) on the left-hand side of a ~ or !~.  Only use one on the right-hand side.  The expression
-                   /foo/ ~ exp has the same meaning as (($0 ~ /foo/) ~ exp).  This is usually not what you want.
-
-  &&          Logical AND.
-
-       ||          Logical OR.
-
-       ?:          The  C  conditional  expression.  This has the form expr1 ? expr2 : expr3.  If expr1 is true, the value of the expression is expr2, otherwise it is expr3.  Only one of expr2 and expr3 is
-                   evaluated.
-
-       = += -= *= /= %= ^=
-                   Assignment.  Both absolute assignment (var = value) and operator-assignment (the other forms) are supported.
-
-   Control Statements
-       The control statements are as follows:
-
-              if (condition) statement [ else statement ]
-              while (condition) statement
-              do statement while (condition)
-              for (expr1; expr2; expr3) statement
-              for (var in array) statement
-              break
-              continue
-              delete array[index]
-              delete array
-              exit [ expression ]
-              { statements }
-              switch (expression) {
-              case value|regex : statement
-  ...
-              [ default: statement ]
-              }
-
-```
-
-
-### Programming usage
-* Here's how you could use the "programming" part of awk:
-```
-#!/usr/bin/awk -f
-BEGIN {
-	IGNORECASE=1
-	hobitses=0
-}
-/fellowship/ {
-	if (index($0,"samwise") >0 ) {
-		hobitses+=1
-		print "Hurry up hobitses"
-	}
-}
-END {
-	print "Found a total of " hobitses " hobitses"
-}
-```
-
-* Let's break this down.
-* You see that this is an awk script because of the shebang (the line beginning with `#!/...`)
-* Before reading any input set the built in var IGNORECASE to 1. "frodo" will match "Frodo", "FRODO", "frodo", etc.
-* We also set a custom variable for our own usage and set its initial value to 0 (hobitses)
-* Check all records (lines) and on those that match `/fellowship/` execute the following:
->> Check if we have the string "samwise" inside the record (line). Index is a built in function. It takes two strings. If the second string is contained within the first it will return a value bigger than 0. If the second string is not present in the first return 0.
->> If index() returns a value bigger than 0 ("samwise" was found inside the current record (line)) do the following:
->>> increase hobitses by 1
->>> print a message
-* After processing all the records print a message with value of our custom variable "hobitses".
-
-
 ### Options
+
 * You can pass options to awk. Here are some useful ones:
+
 * `-f` read awk source file. `awk -f source.awk file.txt`. You put all awk code in the source.awk file. NOTE - don't put the shebang (`#!/usr/bin/awk -f`)
 * `-F` - field separator. Use to define "words". For example if you have a .csv you could make the separator a comma. Like this: `awk -F, '{print $2} file.txt ' - will print the second "word" separated by comma.
 * `-v` assign a variable. Eg: `awk -v count=0 '/bilbo/{count+=1;print "Found another one. Now count is " count}' f1`. init count to 0. On records matching `/bilbo/` increment count by 1. Print the message.
